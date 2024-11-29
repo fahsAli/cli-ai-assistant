@@ -1,9 +1,7 @@
-from crewai import Agent, Task, Crew, Process
+from crewai import Agent, Task, Crew
 from interpreter import interpreter
-from langchain.tools import tool
 import platform
 import json
-
 
 # Detect the current operating system
 current_os = platform.system()
@@ -29,6 +27,7 @@ command_generator_agent = Agent(
     llm="ollama/llama3.2"
 )
 
+# Initialize the Crew
 crew = Crew(
     agents=[command_generator_agent],
     tasks=[],
@@ -46,9 +45,10 @@ while True:
         print("Goodbye!")
         break
 
-    
+    # Determine the shell based on the operating system
     shell = "PowerShell" if current_os == "Windows" else "Bash"
 
+    # Create the task description
     task_description = (
             f"Given the following user prompt: '{user_input}', provide the precise CLI command in {shell} for the detected operating system ({current_os})."
         )
@@ -69,7 +69,7 @@ while True:
         print(f"Generated Command: {result}")
 
         # Interpret the generated command
-        interpreter.chat(str(result) + f'on the {current_os} os')
+        interpreter.chat(str(result))
     
     except Exception as e:
         print(f"An error occurred: {e}")
