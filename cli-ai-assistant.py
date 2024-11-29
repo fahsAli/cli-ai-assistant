@@ -24,7 +24,7 @@ command_generator_agent = Agent(
     role="CLI Command Generator",
     goal="interpret user requests and generate the precise CLI command based on the shell environment",
     backstory="I am a command-line assistant skilled in understanding natural language instructions and converting them into precise terminal commands for different shell environments (CMD, PowerShell for Windows, Bash for Linux/macOS). I provide only the command, with no extra explanation or execution.",
-    llm="ollama/llama3.2"
+    llm=llm,
 )
 
 # Initialize the Crew
