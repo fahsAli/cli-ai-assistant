@@ -1,5 +1,5 @@
 {
-    "llm_model": "ollama/mistral",
-    "interpreted_model": "ollama_chat/mistral",
+    "llm_model": "ollama/codestral",
+    "interpreted_model": "ollama_chat/codestral",
     "ollama_url": "http://localhost:11434"
 }

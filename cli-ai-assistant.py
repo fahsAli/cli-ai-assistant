@@ -1,5 +1,6 @@
 from crewai import Agent, Task, Crew
 from interpreter import interpreter
+from langchain.tools import tool
 import platform
 import json
 
@@ -13,17 +14,35 @@ with open("config.json", "r") as config_file:
 # llm and interpreter config
 llm = config.get("llm_model")
 interpreter.offline = True
-interpreter.auto_run = False  
+interpreter.auto_run = True  
 interpreter.llm.model = config.get("interpreted_model")
 interpreter.llm.api_base = config.get("ollama_url")
 interpreter.verbose = True
 interpreter.llm.max_retries = 20
 
-# Initialize the Command Generator Agent (first agent)
+# initializing open interpreter as a tool
+class CLITool:
+    @tool('cli-executor')
+    def execute_command(command: str):
+        """ Execute the command in the terminal """
+        print(f">>> Executing command: {command}")
+        result = interpreter.chat(command)
+        return result
+
+
+# Initialize the Command Generator Agent
 command_generator_agent = Agent(
-    role="CLI Command Generator",
-    goal="interpret user requests and generate the precise CLI command based on the shell environment",
-    backstory="I am a command-line assistant skilled in understanding natural language instructions and converting them into precise terminal commands for different shell environments (CMD, PowerShell for Windows, Bash for Linux/macOS). I provide only the command, with no extra explanation or execution.",
+    role="CLI Command Executor",
+    goal=(
+        f"Interpret user requests, generate the precise CLI command for this environment ({current_os}), "
+        "and execute the command using the provided tools. Return the execution result to the user."
+    ),
+    backstory=(
+        "I am a command-line assistant skilled in understanding natural language instructions, "
+        "generating precise terminal commands, and executing them directly in the user's environment. "
+        "I support PowerShell for Windows, as well as Bash for Linux."
+    ),
+    tools=[CLITool.execute_command],    
     llm=llm
 )
 
@@ -65,11 +84,5 @@ while True:
         crew.tasks = [user_task]
         result = crew.kickoff()
 
-        # Print the generated command
-        print(f"Generated Command: {result}")
-
-        # Interpret the generated command
-        interpreter.chat(str(result))
-    
     except Exception as e:
         print(f"An error occurred: {e}")
